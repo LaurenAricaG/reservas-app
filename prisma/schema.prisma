@@ -6,3 +6,469 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// =============================================================
+// ENUMS DE ESTADO Y NEGOCIO
+// =============================================================
+
+enum RoomStatus {
+  AVAILABLE      // Disponible (Verde 🟢)
+  OCCUPIED       // Ocupada / Alquilada (Rojo 🔴)
+  RESERVED       // Reservada con anticipo (Amarillo 🟡)
+  CLEANING       // En limpieza / Sucia (Naranja 🟠)
+  MAINTENANCE    // Mantenimiento / Fuera de servicio (Gris ⚪)
+}
+
+enum BookingOrigin {
+  WEB            // Reservado por el cliente desde la página web pública
+  RECEPTION      // Registrado por el recepcionista en mostrador o llamada
+}
+
+enum BookingStatus {
+  PENDING        // Pendiente de pago/confirmación
+  CONFIRMED      // Confirmada con anticipo verificado
+  CHECKED_IN     // El cliente llegó y se convirtió en Stay
+  CANCELLED      // Cancelada
+  NO_SHOW        // No se presentó
+}
+
+enum StayStatus {
+  ACTIVE         // Hospedaje en curso (cliente en el hotel)
+  COMPLETED      // Check-out completado y cuenta liquidada
+  CANCELLED      // Anulada
+}
+
+enum PaymentMethod {
+  CASH           // Efectivo
+  CARD           // Tarjeta crédito/débito
+  TRANSFER       // Transferencia bancaria (BCP, BBVA, etc.)
+  YAPE           // Yape
+  PLIN           // Plin
+}
+
+enum ReceiptType {
+  TICKET         // Nota de venta / Ticket interno
+  BOLETA         // Boleta de Venta
+  FACTURA        // Factura (con RUC)
+}
+
+enum ShiftStatus {
+  OPEN           // Turno de caja abierto
+  CLOSED         // Turno cerrado y arqueado
+}
+
+enum DocumentType {
+  DNI            // Documento Nacional de Identidad
+  PASSPORT       // Pasaporte
+  FOREIGNER_CARD // Carnet de Extranjería
+  RUC            // Registro Único de Contribuyentes (Empresas)
+  OTHER          // Otro
+}
+
+// =============================================================
+// CONFIGURACIÓN GENERAL DEL HOTEL (Singleton)
+// =============================================================
+
+model HotelConfig {
+  id           Int      @id @default(1)
+  name         String   @default("Hotel Party")
+  description  String?  @db.Text
+  ruc          String?  // RUC de la empresa emisora
+  address      String?  // Dirección del hotel
+  phone        String?  // Teléfono de contacto
+  whatsapp     String?  // Para el botón flotante de reservas web
+  email        String?  // Correo de contacto y envío de reservas
+  checkInTime  String   @default("14:00") // Hora oficial de Check-In
+  checkOutTime String   @default("12:00") // Hora oficial de Check-Out
+  logoUrl      String?  // Logo del hotel
+  updatedAt    DateTime @updatedAt
+
+  @@map("hotel_config")
+}
+
+// =============================================================
+// INFRAESTRUCTURA (Pisos, Tipos y Habitaciones)
+// =============================================================
+
+model Floor {
+  id        Int      @id @default(autoincrement())
+  number    Int      @unique // 1, 2, 3...
+  name      String   // "Piso 1", "Piso 2"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  rooms     Room[]
+
+  @@map("floors")
+}
+
+model RoomType {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // "Simple", "Matrimonial", "Doble", "Suite VIP Party"
+  description String?   @db.Text
+  basePrice   Decimal   @db.Decimal(10, 2) // Precio por noche
+  hourlyPrice Decimal?  @db.Decimal(10, 2) // Precio por horas (estancias cortas)
+  maxGuests   Int       @default(2)        // Aforo máximo
+  amenities   String[]  @default([])       // ["Wifi", "Smart TV 65", "Jacuzzi", "Frigobar", "AC"]
+  images      String[]  @default([])       // URLs de fotos de Cloudinary
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Borrado lógico
+
+  rooms       Room[]
+
+  @@index([isActive])
+  @@map("room_types")
+}
+
+model Room {
+  id         Int        @id @default(autoincrement())
+  number     String     @unique // "101", "201", "VIP-01"
+  status     RoomStatus @default(AVAILABLE)
+  notes      String?    // Notas técnicas
+  floorId    Int
+  floor      Floor      @relation(fields: [floorId], references: [id])
+  roomTypeId Int
+  roomType   RoomType   @relation(fields: [roomTypeId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  deletedAt  DateTime?  // Borrado lógico
+
+  bookings   Booking[]
+  stays      Stay[]
+
+  @@index([status])
+  @@index([roomTypeId])
+  @@index([floorId])
+  @@map("rooms")
+}
+
+// =============================================================
+// CATEGORÍAS Y PRODUCTOS / CONSUMOS (Frigobar, Snacks, Servicios)
+// =============================================================
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // "Bebidas", "Snacks", "Licores", "Lavandería", "Servicios"
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Borrado lógico
+  products    Product[]
+  @@map("categories")
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // "Cerveza Corona 330ml", "Inka Cola 500ml", "Pringles Original"
+  description String?
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id])
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int       @default(0) // Control de inventario en almacén / recepción
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Borrado lógico
+  extraCharges StayExtraCharge[]
+  @@index([categoryId, isActive])
+  @@map("products")
+}
+
+// =============================================================
+// SEGURIDAD, USUARIOS Y RBAC (ROLES & PERMISOS)
+// =============================================================
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique // "ADMIN", "RECEPCIONISTA", "LIMPIEZA"
+  description String?
+  isActive    Boolean          @default(true) // Si está en false, bloquea a todos los usuarios de este rol
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?        // Borrado lógico
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  code        String           @unique // "rooms:read", "rooms:create", "stays:checkin", "cash:open"
+  name        String           // "Ver habitaciones", "Hacer Check-In", "Abrir Caja"
+  module      String           // "habitaciones", "reservas", "caja", "usuarios", "reportes"
+  description String?
+  createdAt   DateTime         @default(now())
+
+  roles       RolePermission[]
+
+  @@index([module])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String
+  username     String       @unique
+  email        String       @unique
+  passwordHash String
+  isActive     Boolean      @default(true)
+  roleId       Int
+  role         Role         @relation(fields: [roleId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?    // Borrado lógico
+
+  cashShifts       CashShift[]
+  auditLogs        AuditLog[]
+  registeredExtras StayExtraCharge[] @relation("ExtraRegisteredBy")
+
+  @@index([roleId])
+  @@map("users")
+}
+
+// =============================================================
+// CLIENTES / HUÉSPEDES
+// =============================================================
+
+model Guest {
+  id             Int          @id @default(autoincrement())
+  documentType   DocumentType @default(DNI)
+  documentNumber String       @unique
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  nationality    String?      @default("Peruana")
+  originCity     String?      // Ciudad de procedencia
+  businessName   String?      // Razón Social (para clientes corporativos con Factura)
+  fiscalAddress  String?      // Dirección fiscal
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?    // Borrado lógico
+
+  bookings       Booking[]
+  staysAsPrimary Stay[]       @relation("PrimaryGuest")
+  staysAsGuest   StayGuest[]  // Cuando figura como acompañante
+
+  @@index([documentNumber])
+  @@index([lastName, firstName])
+  @@index([phone])
+  @@map("guests")
+}
+
+// =============================================================
+// RESERVAS (WEB Y MOSTRADOR)
+// =============================================================
+
+model Booking {
+  id              Int           @id @default(autoincrement())
+  code            String        @unique // "RES-2026-0001"
+  origin          BookingOrigin @default(RECEPTION)
+  roomId          Int
+  room            Room          @relation(fields: [roomId], references: [id])
+  guestId         Int
+  guest           Guest         @relation(fields: [guestId], references: [id])
+  
+  checkInDate     DateTime      // Fecha y hora estimada de llegada
+  checkOutDate    DateTime      // Fecha y hora estimada de salida
+  numberOfGuests  Int           @default(1)
+  status          BookingStatus @default(PENDING)
+  totalPrice      Decimal       @db.Decimal(10, 2)
+  depositPaid     Decimal       @default(0.00) @db.Decimal(10, 2) // Adelanto / Seña
+  paymentProofUrl String?       // Foto del voucher de Yape subido en la web
+  clientNotes     String?       // Petición especial del cliente
+  receptionNotes  String?       // Notas internas de recepción
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  stays           Stay[]
+  payments        Payment[]
+
+  @@index([status])
+  @@index([roomId, checkInDate, checkOutDate]) // Consulta instantánea de disponibilidad
+  @@index([guestId])
+  @@index([checkInDate, status]) // "Llegadas de hoy"
+  @@map("bookings")
+}
+
+// =============================================================
+// ALQUILERES / ESTADÍAS ACTIVAS (CHECK-IN)
+// =============================================================
+
+model Stay {
+  id               Int           @id @default(autoincrement())
+  code             String        @unique // "EST-2026-0001"
+  roomId           Int
+  room             Room          @relation(fields: [roomId], references: [id])
+  primaryGuestId   Int
+  primaryGuest     Guest         @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
+  bookingId        Int?          // Null si fue alquiler walk-in directo
+  booking          Booking?      @relation(fields: [bookingId], references: [id])
+  
+  checkInAt        DateTime      @default(now())
+  expectedCheckOut DateTime      // Fecha/hora acordada de salida
+  actualCheckOut   DateTime?     // Fecha/hora real en que entregó la llave
+  status           StayStatus    @default(ACTIVE)
+
+  roomPrice        Decimal       @db.Decimal(10, 2) // Tarifa pactada
+  totalRoomCost    Decimal       @db.Decimal(10, 2) // Noches x Precio
+  totalExtraCost   Decimal       @default(0.00) @db.Decimal(10, 2) // Consumos acumulados
+  securityDeposit  Decimal       @default(0.00) @db.Decimal(10, 2) // Garantía de llave/control
+  discount         Decimal       @default(0.00) @db.Decimal(10, 2)
+  totalAmount      Decimal       @db.Decimal(10, 2) // (room + extra) - discount
+  paidAmount       Decimal       @default(0.00) @db.Decimal(10, 2) // Lo pagado hasta el momento
+  
+  notes            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  additionalGuests StayGuest[]
+  extraCharges     StayExtraCharge[]
+  payments         Payment[]
+
+  @@index([status])
+  @@index([roomId])
+  @@index([primaryGuestId])
+  @@index([bookingId])
+  @@index([expectedCheckOut, status]) // "Salidas de hoy"
+  @@index([checkInAt])
+  @@map("stays")
+}
+
+// Acompañantes registrados en la habitación
+model StayGuest {
+  id        Int      @id @default(autoincrement())
+  stayId    Int
+  stay      Stay     @relation(fields: [stayId], references: [id], onDelete: Cascade)
+  guestId   Int
+  guest     Guest    @relation(fields: [guestId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([stayId, guestId])
+  @@index([stayId])
+  @@index([guestId])
+  @@map("stay_guests")
+}
+
+// Consumos extras: Frigobar, Bebidas, Snacks, Lavandería, Daños
+model StayExtraCharge {
+  id             Int      @id @default(autoincrement())
+  stayId         Int
+  stay           Stay     @relation(fields: [stayId], references: [id], onDelete: Cascade)
+  productId      Int?     // Opcional: vinculado al catálogo de productos
+  product        Product? @relation(fields: [productId], references: [id])
+  concept        String   // "Cerveza Corona", "Lavandería express", "Toalla rota"
+  quantity       Int      @default(1)
+  unitPrice      Decimal  @db.Decimal(10, 2)
+  totalPrice     Decimal  @db.Decimal(10, 2)
+  registeredById Int?
+  registeredBy   User?    @relation("ExtraRegisteredBy", fields: [registeredById], references: [id])
+  createdAt      DateTime @default(now())
+  @@index([stayId])
+  @@index([productId])
+  @@map("stay_extra_charges")
+}
+
+// =============================================================
+// CAJA, TURNOS DE RECEPCIÓN Y PAGOS
+// =============================================================
+
+model CashShift {
+  id           Int         @id @default(autoincrement())
+  userId       Int         // Recepcionista que abrió el turno
+  user         User        @relation(fields: [userId], references: [id])
+  openedAt     DateTime    @default(now())
+  closedAt     DateTime?
+  initialCash  Decimal     @db.Decimal(10, 2) // Saldo inicial en caja física
+  expectedCash Decimal?    @db.Decimal(10, 2) // Calculado por el sistema
+  actualCash   Decimal?    @db.Decimal(10, 2) // Conteo físico al cerrar caja
+  difference   Decimal?    @db.Decimal(10, 2) // Sobrante (+) o Faltante (-)
+  status       ShiftStatus @default(OPEN)
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  payments     Payment[]
+
+  @@index([status])
+  @@index([userId])
+  @@index([openedAt])
+  @@map("cash_shifts")
+}
+
+model ReceiptSeries {
+  id            Int         @id @default(autoincrement())
+  receiptType   ReceiptType // TICKET, BOLETA, FACTURA
+  series        String      @unique // "T001", "B001", "F001"
+  currentNumber Int         @default(0) // Último número emitido (ej: 145)
+  updatedAt     DateTime    @updatedAt
+
+  @@map("receipt_series")
+}
+
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  bookingId     Int?
+  booking       Booking?      @relation(fields: [bookingId], references: [id])
+  stayId        Int?
+  stay          Stay?         @relation(fields: [stayId], references: [id])
+  cashShiftId   Int?
+  cashShift     CashShift?    @relation(fields: [cashShiftId], references: [id])
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod @default(CASH)
+  
+  // Comprobante simple y directo:
+  receiptType   ReceiptType   @default(TICKET) // TICKET, BOLETA o FACTURA
+  receiptNumber String?       @unique          // "B001-00000125", "T001-00000080"
+  
+  reference     String?       // N° de operación bancaria o Yape
+  notes         String?
+  createdAt     DateTime      @default(now())
+  @@index([stayId])
+  @@index([bookingId])
+  @@index([cashShiftId])
+  @@index([receiptType])
+  @@index([method, createdAt])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+
+// =============================================================
+// BITÁCORA DE AUDITORÍA (AUDIT LOG)
+// =============================================================
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String   // "CHECK_IN", "CHECK_OUT", "EXTRA_CHARGE_ADDED", "ROOM_STATUS_CHANGED"
+  entity    String   // "Room", "Stay", "Booking", "CashShift"
+  entityId  Int?
+  details   Json?    // Objeto JSON con el cambio realizado para auditoría forense
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
