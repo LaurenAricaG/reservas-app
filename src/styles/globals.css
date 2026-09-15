@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+/* =============================================================
+   DESIGN TOKENS (SOLO LIGHT MODE - HOTEL PARTY)
+   ============================================================= */
+:root {
+  /* Brand: Índigo Real / Zafiro Hotelero */
+  --brand-50: #eef2ff;
+  --brand-100: #e0e7ff;
+  --brand-200: #c7d2fe;
+  --brand-300: #a5b4fc;
+  --brand-400: #818cf8;
+  --brand-500: #6366f1;
+  --brand-600: #4f46e5;
+  --brand-700: #4338ca;
+  --brand-800: #3730a3;
+  --brand-900: #312e81;
+  --brand-950: #1e1b4b;
+
+  /* Fondos */
+  --bg-page: #f8fafc;
+  /* Fondo general suave */
+  --bg-surface: #f1f5f9;
+  /* Fondo de contenedores y barras */
+  --bg-card: #ffffff;
+  /* Fondo blanco puro para tarjetas */
+  --bg-accent: #eef2ff;
+  /* Fondo destacado suave */
+
+  /* Bordes */
+  --border-soft: #f1f5f9;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-accent: #6366f1;
+
+  /* Texto */
+  --text-primary: #0f172a;
+  /* Texto principal de alto contraste */
+  --text-secondary: #475569;
+  /* Texto secundario / subtítulos */
+  --text-tertiary: #94a3b8;
+  /* Texto tenue / placeholders */
+  --text-accent: #4f46e5;
+  /* Texto de énfasis / links */
+  --text-on-accent: #ffffff;
+  /* Texto sobre botones oscuros */
+
+  /* Semánticos (Feedback y Alertas) */
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-text: #065f46;
+
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-text: #92400e;
+
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --danger-text: #991b1b;
+
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+  --info-text: #1e40af;
+
+  /* Estados Específicos del Rack de Habitaciones */
+  --room-available-bg: #ecfdf5;
+  --room-available-border: #a7f3d0;
+  --room-available-text: #065f46;
+
+  --room-occupied-bg: #fef2f2;
+  --room-occupied-border: #fecaca;
+  --room-occupied-text: #991b1b;
+
+  --room-reserved-bg: #fffbeb;
+  --room-reserved-border: #fde68a;
+  --room-reserved-text: #92400e;
+
+  --room-cleaning-bg: #fff7ed;
+  --room-cleaning-border: #fed7aa;
+  --room-cleaning-text: #9a3412;
+
+  --room-maintenance-bg: #f8fafc;
+  --room-maintenance-border: #cbd5e1;
+  --room-maintenance-text: #475569;
+
+  /* Elementos Activos (Sidebar / Menús) */
+  --bg-active-item: var(--brand-900);
+  --text-active-item: #ffffff;
+
+  /* Selección de Texto */
+  --bg-selection: var(--brand-100);
+  --text-selection: var(--brand-950);
+}
+
+/* =============================================================
+   TAILWIND THEME v4 (Mapeo directo de clases en Tailwind)
+   ============================================================= */
+@theme inline {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Brand */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+
+  /* Fondos */
+  --color-bg-page: var(--bg-page);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-card: var(--bg-card);
+  --color-bg-accent: var(--bg-accent);
+
+  /* Bordes */
+  --color-border-soft: var(--border-soft);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-border-accent: var(--border-accent);
+
+  /* Texto */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-accent: var(--text-accent);
+  --color-text-on-accent: var(--text-on-accent);
+
+  /* Semánticos */
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
+  --color-success-text: var(--success-text);
+
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
+  --color-warning-text: var(--warning-text);
+
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-border: var(--danger-border);
+  --color-danger-text: var(--danger-text);
+
+  --color-info-bg: var(--info-bg);
+  --color-info-border: var(--info-border);
+  --color-info-text: var(--info-text);
+
+  /* Habitaciones */
+  --color-room-available-bg: var(--room-available-bg);
+  --color-room-available-border: var(--room-available-border);
+  --color-room-available-text: var(--room-available-text);
+
+  --color-room-occupied-bg: var(--room-occupied-bg);
+  --color-room-occupied-border: var(--room-occupied-border);
+  --color-room-occupied-text: var(--room-occupied-text);
+
+  --color-room-reserved-bg: var(--room-reserved-bg);
+  --color-room-reserved-border: var(--room-reserved-border);
+  --color-room-reserved-text: var(--room-reserved-text);
+
+  --color-room-cleaning-bg: var(--room-cleaning-bg);
+  --color-room-cleaning-border: var(--room-cleaning-border);
+  --color-room-cleaning-text: var(--room-cleaning-text);
+
+  --color-room-maintenance-bg: var(--room-maintenance-bg);
+  --color-room-maintenance-border: var(--room-maintenance-border);
+  --color-room-maintenance-text: var(--room-maintenance-text);
+
+  /* Active Items */
+  --color-bg-active-item: var(--bg-active-item);
+  --color-text-active-item: var(--text-active-item);
+}
+
+
+::selection {
+  background-color: var(--bg-selection);
+  color: var(--text-selection);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
