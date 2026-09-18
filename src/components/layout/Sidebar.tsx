@@ -192,7 +192,7 @@ export default function Sidebar({
       <nav
         onScroll={() => setHoveredItem(null)}
         className={cn(
-          "p-3 space-y-1 mt-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden",
+          "p-3.5 space-y-2 mt-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden",
           collapsed && "md:px-2",
         )}
       >
@@ -215,30 +215,30 @@ export default function Sidebar({
               }}
               onMouseLeave={() => setHoveredItem(null)}
               className={cn(
-                "flex items-center transition-all duration-200 group relative rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400",
+                "flex items-center transition-all duration-200 group relative rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 select-none",
                 collapsed
-                  ? "w-full gap-3 px-3 py-2.5 md:w-11 md:h-11 md:justify-center md:mx-auto md:px-0 md:gap-0"
-                  : "w-full gap-3 px-3 py-2.5",
+                  ? "w-full gap-3 px-3 py-3 md:w-12 md:h-12 md:justify-center md:mx-auto md:px-0 md:gap-0"
+                  : "w-full gap-3.5 px-3.5 py-3",
                 isActive
                   ? "bg-brand-50 text-brand-700 font-semibold shadow-2xs"
-                  : "text-text-secondary hover:bg-bg-surface hover:text-text-primary",
+                  : "text-text-secondary hover:bg-brand-50 hover:text-brand-700 hover:shadow-2xs",
               )}
               title={isVisuallyCollapsed ? item.label : undefined}
             >
               <Icon
                 className={cn(
-                  "w-4 h-4 transition-transform duration-200 group-hover:scale-105 shrink-0",
+                  "w-5 h-5 transition-transform duration-200 group-hover:scale-105 shrink-0",
                   isActive
                     ? "text-brand-600 font-bold"
-                    : "text-text-tertiary group-hover:text-text-primary",
+                    : "text-text-tertiary group-hover:text-brand-600",
                 )}
               />
 
               <span
                 className={cn(
-                  "text-xs font-medium tracking-normal transition-all duration-300 whitespace-nowrap overflow-hidden",
+                  "text-sm font-medium tracking-normal transition-all duration-300 whitespace-nowrap overflow-hidden",
                   collapsed
-                    ? "md:max-w-0 md:opacity-0 md:pointer-events-none"
+                    ? "md:max-w-0 md:w-0 md:opacity-0 md:pointer-events-none"
                     : "max-w-48 opacity-100",
                 )}
               >
@@ -252,8 +252,8 @@ export default function Sidebar({
       {/* Footer: Enlace a Web Pública y Cerrar Sesión */}
       <div
         className={cn(
-          "p-3 border-t border-border-default space-y-2 bg-bg-surface/50 shrink-0",
-          collapsed && "md:px-2",
+          "p-3.5 border-t border-border-default space-y-2 bg-bg-surface/50 shrink-0",
+          collapsed && "md:px-0 md:flex md:justify-center",
         )}
       >
         {/* Botón Salir */}
@@ -270,23 +270,19 @@ export default function Sidebar({
           }}
           onMouseLeave={() => setHoveredItem(null)}
           className={cn(
-            "flex items-center gap-2.5 px-3 py-2 rounded-xl w-full text-danger-text hover:bg-danger-bg transition-colors cursor-pointer",
+            "flex items-center rounded-xl border border-danger-border text-danger-text hover:bg-danger-bg transition-all duration-150 cursor-pointer select-none shadow-2xs",
             collapsed
-              ? "md:w-11 md:h-11 md:justify-center md:mx-auto md:px-0"
-              : "",
+              ? "w-full justify-center px-0 py-3 md:w-12 md:h-12 md:p-0 md:gap-0 md:justify-center md:items-center"
+              : "w-full gap-3.5 px-3.5 py-3",
           )}
+          title={isVisuallyCollapsed ? "Cerrar Sesión" : undefined}
         >
-          <FiLogOut className="w-4 h-4 shrink-0" />
-          <span
-            className={cn(
-              "text-xs font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
-              collapsed
-                ? "md:max-w-0 md:opacity-0 md:pointer-events-none"
-                : "max-w-48 opacity-100",
-            )}
-          >
-            Cerrar Sesión
-          </span>
+          <FiLogOut className="w-5 h-5 shrink-0" />
+          {!collapsed && (
+            <span className="text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden max-w-48 opacity-100">
+              Cerrar Sesión
+            </span>
+          )}
         </button>
       </div>
 
