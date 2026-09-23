@@ -25,3 +25,5 @@ export {
   TableCell,
   type TableProps,
 } from "./Table";
+export { default as ButtonIcon, type ButtonIconVariant } from "./ButtonIcon";
+export { default as PageHeader, PageHeaderSkeleton } from "./PageHeader";
