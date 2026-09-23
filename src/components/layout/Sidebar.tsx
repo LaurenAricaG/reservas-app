@@ -69,6 +69,12 @@ export default function Sidebar({
       permission: "rooms:read",
     },
     {
+      label: "Categorias",
+      href: "/admin/categorias",
+      icon: FiLogIn,
+      permission: "categories:read",
+    },
+    {
       label: "Check-In / Alquiler",
       href: "/admin/check-in",
       icon: FiLogIn,
