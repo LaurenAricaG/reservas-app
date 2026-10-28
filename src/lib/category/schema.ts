@@ -10,6 +10,12 @@ export const categorySchema = z.object({
       /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-\.\/]+$/,
       "El nombre solo puede contener letras, números, espacios, guiones, puntos y barras diagonales.",
     ),
+  description: z
+    .string()
+    .max(150, "La descripción no puede exceder los 150 caracteres.")
+    .optional()
+    .nullable()
+    .transform((val) => (val?.trim() ? val.trim() : null)),
 });
 
 export type CategoryInput = z.infer<typeof categorySchema>;

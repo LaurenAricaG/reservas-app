@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, ReactNode } from "react";
+import { useEffect, useRef, useState, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 import { cn } from "@/utils/cn.utils";
 
@@ -36,6 +37,11 @@ export default function Modal({
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Bloquear scroll de la página cuando el modal está abierto
   useEffect(() => {
@@ -94,7 +100,7 @@ export default function Modal({
     }
   }, [isOpen, initialFocusRef]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const sizes = {
     sm: "max-w-sm",
@@ -103,11 +109,11 @@ export default function Modal({
     xl: "max-w-xl",
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop suave */}
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Backdrop que oscurece 100% de la ventana completa */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-200 animate-in fade-in"
+        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-200 animate-in fade-in cursor-pointer"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -119,7 +125,7 @@ export default function Modal({
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
         className={cn(
-          "relative w-full bg-bg-card border border-border-default rounded-2xl shadow-lg z-10 flex flex-col max-h-[90vh] transition-all duration-200 animate-in fade-in zoom-in-95 outline-none overflow-hidden",
+          "relative w-full bg-bg-card border border-border-default rounded-2xl shadow-2xl z-10 flex flex-col max-h-[90vh] transition-all duration-200 animate-in fade-in zoom-in-95 outline-none overflow-hidden",
           sizes[size],
           className,
         )}
@@ -173,6 +179,7 @@ export default function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

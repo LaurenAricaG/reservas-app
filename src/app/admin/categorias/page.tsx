@@ -20,19 +20,31 @@ export default async function CategoriasPage(props: CategoriasPageProps) {
   const page = Number(searchParams.page) || 1;
   const search =
     typeof searchParams.search === "string" ? searchParams.search : "";
+  const status =
+    typeof searchParams.status === "string" ? searchParams.status : "all";
 
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  // Filtros de búsqueda
-  const whereClause = {
+  // Filtros de búsqueda y estado
+  const whereClause: {
+    deletedAt: null;
+    name?: { contains: string; mode: "insensitive" };
+    isActive?: boolean;
+  } = {
     deletedAt: null,
     ...(search
       ? {
-          name: { contains: search, mode: "insensitive" as const },
+          name: { contains: search, mode: "insensitive" },
         }
       : {}),
   };
+
+  if (status === "active") {
+    whereClause.isActive = true;
+  } else if (status === "inactive") {
+    whereClause.isActive = false;
+  }
 
   const [categories, totalItems, overallCount] = await Promise.all([
     prisma.category.findMany({
@@ -40,7 +52,12 @@ export default async function CategoriasPage(props: CategoriasPageProps) {
       select: {
         id: true,
         name: true,
+        description: true,
+        isActive: true,
         createdAt: true,
+        _count: {
+          select: { products: true },
+        },
       },
       take: limit,
       skip: skip,
@@ -65,6 +82,7 @@ export default async function CategoriasPage(props: CategoriasPageProps) {
       currentPage={page}
       itemsPerPage={limit}
       search={search}
+      status={status}
       permissions={permissions}
     />
   );

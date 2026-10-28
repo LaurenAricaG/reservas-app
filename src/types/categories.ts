@@ -7,4 +7,7 @@ export type SerializedCategory = Omit<
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string | null;
+  _count?: {
+    products: number;
+  };
 };

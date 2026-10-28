@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { toast } from "sonner";
 import {
   Button,
@@ -39,6 +39,14 @@ import {
 } from "react-icons/fi";
 
 export default function DemoUIPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-text-secondary">Cargando catálogo...</div>}>
+      <DemoUIContent />
+    </Suspense>
+  );
+}
+
+function DemoUIContent() {
   // Estados para probar interactividad
   const [inputText, setInputText] = useState("");
   const [inputError, setInputError] = useState("");
