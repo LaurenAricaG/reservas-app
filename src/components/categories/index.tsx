@@ -14,6 +14,7 @@ import {
   deactivateCategoryAction,
   restoreCategoryAction,
 } from "@/lib/category";
+import { hasPermission } from "@/utils/permissions.utils";
 
 interface CategoriesProps {
   initialCategories: SerializedCategory[];
@@ -25,6 +26,7 @@ interface CategoriesProps {
   search: string;
   status: string;
   permissions: string[];
+  userRole?: string | null;
 }
 
 export default function Categories({
@@ -37,6 +39,7 @@ export default function Categories({
   search,
   status,
   permissions,
+  userRole,
 }: CategoriesProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -53,19 +56,22 @@ export default function Categories({
     useState<SerializedCategory | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Permisos
-  const canCreate =
-    permissions.includes("categories:create") ||
-    permissions.includes("products:manage") ||
-    permissions.includes("categories:read");
-  const canUpdate =
-    permissions.includes("categories:update") ||
-    permissions.includes("products:manage") ||
-    permissions.includes("categories:read");
-  const canDelete =
-    permissions.includes("categories:delete") ||
-    permissions.includes("products:manage") ||
-    permissions.includes("categories:read");
+  // Permisos granulares y retrocompatibles
+  const canCreate = hasPermission(
+    permissions,
+    ["categories:create", "categories:manage", "products:manage"],
+    userRole,
+  );
+  const canUpdate = hasPermission(
+    permissions,
+    ["categories:update", "categories:edit", "categories:manage", "products:manage"],
+    userRole,
+  );
+  const canDelete = hasPermission(
+    permissions,
+    ["categories:delete", "categories:manage", "products:manage"],
+    userRole,
+  );
 
   // Filtro de estado
   const currentStatus = searchParams.get("status") || "all";

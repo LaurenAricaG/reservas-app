@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { roomTypeSchema, type RoomTypeInput } from "./schema";
 import { createAuditLog } from "@/lib/audit";
+import { hasPermission } from "@/utils/permissions.utils";
 
 export interface RoomTypeActionResult {
   success: boolean;
@@ -13,12 +15,28 @@ export interface RoomTypeActionResult {
 }
 
 /**
- * Crea un nuevo tipo de habitación con validación Zod y registro en AuditLog
+ * Crea un nuevo tipo de habitación con validación Zod, verificación de permisos y registro en AuditLog
  */
 export async function createRoomTypeAction(
   input: RoomTypeInput,
 ): Promise<RoomTypeActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        ["rooms:create", "rooms:manage"],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para crear tipos de habitación.",
+      };
+    }
+
     const parsed = roomTypeSchema.safeParse(input);
 
     if (!parsed.success) {
@@ -109,13 +127,29 @@ export async function createRoomTypeAction(
 }
 
 /**
- * Edita un tipo de habitación existente con validación Zod y registro en AuditLog
+ * Edita un tipo de habitación existente con validación Zod, permisos y registro en AuditLog
  */
 export async function updateRoomTypeAction(
   id: number,
   input: RoomTypeInput,
 ): Promise<RoomTypeActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        ["rooms:update", "rooms:edit", "rooms:manage"],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para editar tipos de habitación.",
+      };
+    }
+
     const parsed = roomTypeSchema.safeParse(input);
 
     if (!parsed.success) {
@@ -262,12 +296,28 @@ export async function updateRoomTypeAction(
 }
 
 /**
- * Da de baja (desactiva) un tipo de habitación con confirmación y registro en AuditLog
+ * Da de baja (desactiva) un tipo de habitación con confirmación, permisos y registro en AuditLog
  */
 export async function deactivateRoomTypeAction(
   id: number,
 ): Promise<RoomTypeActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        ["rooms:delete", "rooms:manage"],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para dar de baja tipos de habitación.",
+      };
+    }
+
     const roomType = await prisma.roomType.findUnique({
       where: { id },
       include: {
@@ -325,12 +375,28 @@ export async function deactivateRoomTypeAction(
 }
 
 /**
- * Restaura (activa) un tipo de habitación con confirmación y registro en AuditLog
+ * Restaura (activa) un tipo de habitación con confirmación, permisos y registro en AuditLog
  */
 export async function restoreRoomTypeAction(
   id: number,
 ): Promise<RoomTypeActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        ["rooms:update", "rooms:edit", "rooms:manage"],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para restaurar tipos de habitación.",
+      };
+    }
+
     const roomType = await prisma.roomType.findUnique({
       where: { id },
       include: {
@@ -385,4 +451,3 @@ export async function restoreRoomTypeAction(
     };
   }
 }
-

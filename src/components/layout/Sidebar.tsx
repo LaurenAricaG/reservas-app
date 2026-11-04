@@ -22,6 +22,7 @@ import {
 } from "react-icons/fi";
 import { MdOutlineMeetingRoom } from "react-icons/md";
 import { FiLayers } from "react-icons/fi";
+import { hasPermission } from "@/utils/permissions.utils";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -35,6 +36,7 @@ export default function Sidebar({
   collapsed,
   mobileOpen,
   onClose,
+  userRole,
   userPermissions = [],
 }: SidebarProps) {
   const pathname = usePathname();
@@ -73,13 +75,13 @@ export default function Sidebar({
       label: "Categorías",
       href: "/admin/categorias",
       icon: FiLogIn,
-      permission: "categories:read",
+      permission: ["categories:read", "categories:manage", "products:manage"],
     },
     {
       label: "Tipos de Habitación",
       href: "/admin/tipos-habitacion",
       icon: FiLayers,
-      permission: "rooms:manage",
+      permission: ["rooms:read", "rooms:manage"],
     },
     {
       label: "Check-In / Alquiler",
@@ -121,7 +123,7 @@ export default function Sidebar({
       label: "Habitaciones & Pisos",
       href: "/admin/habitaciones",
       icon: MdOutlineMeetingRoom,
-      permission: "rooms:manage",
+      permission: ["rooms:read", "rooms:manage"],
     },
     {
       label: "Reportes & Cierre",
@@ -146,8 +148,8 @@ export default function Sidebar({
   // Si aún no hay permisos cargados (fase preview / admin general), mostramos todos los módulos
   const navItems =
     userPermissions.length > 0
-      ? allNavItems.filter((item) => userPermissions.includes(item.permission))
-      : allNavItems;
+        ? allNavItems.filter((item) => hasPermission(userPermissions, item.permission, userRole))
+        : allNavItems;
 
   return (
     <aside

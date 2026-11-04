@@ -2,6 +2,7 @@ import RoomTypes from "@/components/roomTypes";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { hasPermission } from "@/utils/permissions.utils";
 
 interface RoomTypesPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -11,11 +12,13 @@ export default async function RoomTypesPage(props: RoomTypesPageProps) {
   const session = await auth();
   const permissions = session?.user?.permissions ?? [];
 
-  // Validar permisos (rooms:manage o rooms:read)
+  // Validar permisos de acceso al módulo (granular o maestro)
   if (
-    permissions.length > 0 &&
-    !permissions.includes("rooms:manage") &&
-    !permissions.includes("rooms:read")
+    !hasPermission(
+      permissions,
+      ["rooms:read", "rooms:manage"],
+      session?.user?.role,
+    )
   ) {
     redirect("/admin");
   }
@@ -39,8 +42,8 @@ export default async function RoomTypesPage(props: RoomTypesPageProps) {
     deletedAt: null,
     ...(search
       ? {
-          name: { contains: search, mode: "insensitive" },
-        }
+        name: { contains: search, mode: "insensitive" },
+      }
       : {}),
   };
 
@@ -93,7 +96,7 @@ export default async function RoomTypesPage(props: RoomTypesPageProps) {
       search={search}
       status={status}
       permissions={permissions}
+      userRole={session?.user?.role}
     />
   );
 }
-

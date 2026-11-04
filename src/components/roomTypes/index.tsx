@@ -14,6 +14,7 @@ import {
   deactivateRoomTypeAction,
   restoreRoomTypeAction,
 } from "@/lib/roomType";
+import { hasPermission } from "@/utils/permissions.utils";
 
 interface RoomTypesProps {
   initialRoomTypes: SerializedRoomType[];
@@ -25,6 +26,7 @@ interface RoomTypesProps {
   search: string;
   status: string;
   permissions: string[];
+  userRole?: string | null;
 }
 
 export default function RoomTypes({
@@ -37,6 +39,7 @@ export default function RoomTypes({
   search,
   status,
   permissions,
+  userRole,
 }: RoomTypesProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -53,19 +56,22 @@ export default function RoomTypes({
     useState<SerializedRoomType | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Permisos
-  const canCreate =
-    permissions.includes("rooms:manage") ||
-    permissions.includes("rooms:read") ||
-    permissions.includes("users:manage");
-  const canUpdate =
-    permissions.includes("rooms:manage") ||
-    permissions.includes("rooms:read") ||
-    permissions.includes("users:manage");
-  const canDelete =
-    permissions.includes("rooms:manage") ||
-    permissions.includes("rooms:read") ||
-    permissions.includes("users:manage");
+  // Permisos granulares y retrocompatibles
+  const canCreate = hasPermission(
+    permissions,
+    ["rooms:create", "rooms:manage"],
+    userRole,
+  );
+  const canUpdate = hasPermission(
+    permissions,
+    ["rooms:update", "rooms:edit", "rooms:manage"],
+    userRole,
+  );
+  const canDelete = hasPermission(
+    permissions,
+    ["rooms:delete", "rooms:manage"],
+    userRole,
+  );
 
   // Filtro de estado
   const currentStatus = searchParams.get("status") || "all";
@@ -324,4 +330,3 @@ export default function RoomTypes({
     </div>
   );
 }
-

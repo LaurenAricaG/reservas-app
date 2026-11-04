@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { categorySchema, type CategoryInput } from "./schema";
 import { createAuditLog } from "@/lib/audit";
+import { hasPermission } from "@/utils/permissions.utils";
 
 export interface CategoryActionResult {
   success: boolean;
@@ -13,12 +15,28 @@ export interface CategoryActionResult {
 }
 
 /**
- * Crea una nueva categoría con validación Zod y registro en AuditLog
+ * Crea una nueva categoría con validación Zod, verificación de permisos y registro en AuditLog
  */
 export async function createCategoryAction(
   input: CategoryInput,
 ): Promise<CategoryActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        ["categories:create", "categories:manage", "products:manage"],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para crear categorías.",
+      };
+    }
+
     const parsed = categorySchema.safeParse(input);
 
     if (!parsed.success) {
@@ -90,13 +108,34 @@ export async function createCategoryAction(
 }
 
 /**
- * Edita una categoría existente con validación Zod y registro en AuditLog
+ * Edita una categoría existente con validación Zod, permisos y registro en AuditLog
  */
 export async function updateCategoryAction(
   id: number,
   input: CategoryInput,
 ): Promise<CategoryActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        [
+          "categories:update",
+          "categories:edit",
+          "categories:manage",
+          "products:manage",
+        ],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para editar categorías.",
+      };
+    }
+
     const parsed = categorySchema.safeParse(input);
 
     if (!parsed.success) {
@@ -196,12 +235,28 @@ export async function updateCategoryAction(
 }
 
 /**
- * Da de baja (desactiva) una categoría con confirmación y registro en AuditLog
+ * Da de baja (desactiva) una categoría con confirmación, permisos y registro en AuditLog
  */
 export async function deactivateCategoryAction(
   id: number,
 ): Promise<CategoryActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        ["categories:delete", "categories:manage", "products:manage"],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para dar de baja categorías.",
+      };
+    }
+
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
@@ -257,12 +312,33 @@ export async function deactivateCategoryAction(
 }
 
 /**
- * Restaura (activa) una categoría con confirmación y registro en AuditLog
+ * Restaura (activa) una categoría con confirmación, permisos y registro en AuditLog
  */
 export async function restoreCategoryAction(
   id: number,
 ): Promise<CategoryActionResult> {
   try {
+    const session = await auth();
+    const permissions = session?.user?.permissions ?? [];
+
+    if (
+      !hasPermission(
+        permissions,
+        [
+          "categories:update",
+          "categories:edit",
+          "categories:manage",
+          "products:manage",
+        ],
+        session?.user?.role,
+      )
+    ) {
+      return {
+        success: false,
+        message: "No tienes permiso para restaurar categorías.",
+      };
+    }
+
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
