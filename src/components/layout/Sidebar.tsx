@@ -21,6 +21,7 @@ import {
   FiExternalLink,
 } from "react-icons/fi";
 import { MdOutlineMeetingRoom } from "react-icons/md";
+import { FiLayers } from "react-icons/fi";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -69,10 +70,16 @@ export default function Sidebar({
       permission: "rooms:read",
     },
     {
-      label: "Categorias",
+      label: "Categorías",
       href: "/admin/categorias",
       icon: FiLogIn,
       permission: "categories:read",
+    },
+    {
+      label: "Tipos de Habitación",
+      href: "/admin/tipos-habitacion",
+      icon: FiLayers,
+      permission: "rooms:manage",
     },
     {
       label: "Check-In / Alquiler",
