@@ -20,7 +20,7 @@ import {
   FiX,
   FiExternalLink,
 } from "react-icons/fi";
-import { MdOutlineMeetingRoom } from "react-icons/md";
+import { MdOutlineMeetingRoom, MdOutlineApartment } from "react-icons/md";
 import { FiLayers } from "react-icons/fi";
 import { hasPermission } from "@/utils/permissions.utils";
 
@@ -120,7 +120,13 @@ export default function Sidebar({
       permission: "guests:read",
     },
     {
-      label: "Habitaciones & Pisos",
+      label: "Pisos",
+      href: "/admin/pisos",
+      icon: MdOutlineApartment,
+      permission: ["rooms:read", "rooms:manage", "floors:read", "floors:manage"],
+    },
+    {
+      label: "Habitaciones",
       href: "/admin/habitaciones",
       icon: MdOutlineMeetingRoom,
       permission: ["rooms:read", "rooms:manage"],
