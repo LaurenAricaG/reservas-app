@@ -184,7 +184,7 @@ export default function RoomTypeModal({
         <>
           <Button
             variant="secondary"
-            size="sm"
+            size="md"
             onClick={onClose}
             disabled={loading}
           >
@@ -192,12 +192,13 @@ export default function RoomTypeModal({
           </Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={handleSubmit}
             loading={loading}
             disabled={loading}
+            className="shadow-2xs font-semibold"
           >
-            {isEditing ? "Guardar Cambios" : "Crear Tipo de Habitación"}
+            {isEditing ? "Actualizar" : "Guardar"}
           </Button>
         </>
       }

@@ -45,7 +45,7 @@ export default function ConfirmModal({
         <>
           <Button
             variant="secondary"
-            size="sm"
+            size="md"
             onClick={onClose}
             disabled={isLoading}
           >
@@ -53,10 +53,11 @@ export default function ConfirmModal({
           </Button>
           <Button
             variant={buttonVariantMap[variant]}
-            size="sm"
+            size="md"
             onClick={onConfirm}
             loading={isLoading}
             disabled={isLoading}
+            className="shadow-2xs font-semibold"
           >
             {confirmText}
           </Button>

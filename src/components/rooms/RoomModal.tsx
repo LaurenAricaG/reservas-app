@@ -183,7 +183,7 @@ export default function RoomModal({
         <>
           <Button
             variant="secondary"
-            size="sm"
+            size="md"
             onClick={onClose}
             disabled={loading}
           >
@@ -191,12 +191,13 @@ export default function RoomModal({
           </Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={handleSubmit}
             loading={loading}
             disabled={loading}
+            className="shadow-2xs font-semibold"
           >
-            {isEditing ? "Guardar Cambios" : "Crear Habitación"}
+            {isEditing ? "Actualizar" : "Guardar"}
           </Button>
         </>
       }

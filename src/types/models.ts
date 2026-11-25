@@ -1,3 +1,3 @@
-import { Category, RoomType, Room, Floor, RoomStatus } from "@/generated/prisma/client";
+import { Category, RoomType, Room, Floor, RoomStatus, Product } from "@/generated/prisma/client";
 
-export type { Category, RoomType, Room, Floor, RoomStatus };
+export type { Category, RoomType, Room, Floor, RoomStatus, Product };

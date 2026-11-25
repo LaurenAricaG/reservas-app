@@ -220,7 +220,7 @@ export default function FloorModal({
             ) : (
               <span className="flex items-center gap-1.5">
                 <FiCheck className="w-4 h-4" />
-                {isEditing ? "Guardar Cambios" : "Crear Piso"}
+                {isEditing ? "Actualizar" : "Guardar"}
               </span>
             )}
           </Button>

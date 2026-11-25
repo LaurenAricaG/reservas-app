@@ -123,7 +123,7 @@ export default function CategoryModal({
         <>
           <Button
             variant="secondary"
-            size="sm"
+            size="md"
             onClick={onClose}
             disabled={loading}
           >
@@ -131,12 +131,13 @@ export default function CategoryModal({
           </Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={handleSubmit}
             loading={loading}
             disabled={loading}
+            className="shadow-2xs font-semibold"
           >
-            {isEditing ? "Guardar Cambios" : "Crear Categoría"}
+            {isEditing ? "Actualizar" : "Guardar"}
           </Button>
         </>
       }

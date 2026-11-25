@@ -108,10 +108,10 @@ export default function Sidebar({
       permission: "cash:read",
     },
     {
-      label: "Consumos / Minibar",
-      href: "/admin/consumos",
+      label: "Productos",
+      href: "/admin/productos",
       icon: FiShoppingBag,
-      permission: "products:read",
+      permission: ["products:read", "products:manage"],
     },
     {
       label: "Huéspedes",
