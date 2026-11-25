@@ -4,15 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { FiSearch, FiX } from "react-icons/fi";
 import Input from "@/components/ui/Input";
+import { cn } from "@/utils/cn.utils";
 
 interface SearchInputProps {
   placeholder?: string;
   debounceMs?: number;
+  className?: string;
 }
 
 export default function SearchInput({
   placeholder = "Buscar...",
   debounceMs = 500,
+  className,
 }: SearchInputProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -60,24 +63,24 @@ export default function SearchInput({
   };
 
   return (
-    <div className="w-full max-w-md">
-      <Input
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        icon={<FiSearch className="w-4 h-4 text-text-tertiary" />}
-        endIcon={
-          value ? (
-            <button
-              onClick={handleClear}
-              className="p-1 rounded-lg hover:bg-bg-surface text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
-              aria-label="Limpiar búsqueda"
-            >
-              <FiX className="w-4 h-4" />
-            </button>
-          ) : undefined
-        }
-      />
-    </div>
-  );
+      <div className={cn("w-full max-w-md", className)}>
+        <Input
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          icon={<FiSearch className="w-4 h-4 text-text-tertiary" />}
+          endIcon={
+            value ? (
+              <button
+                onClick={handleClear}
+                className="p-1 rounded-lg hover:bg-bg-surface text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
+                aria-label="Limpiar búsqueda"
+              >
+                <FiX className="w-4 h-4" />
+              </button>
+            ) : undefined
+          }
+        />
+      </div>
+      );
 }

@@ -129,7 +129,7 @@ export default function TableRoomTypes({
                         {amenities.slice(0, 2).map((a) => (
                           <span
                             key={a}
-                            className="inline-block text-[11px] px-1.5 py-0.5 bg-bg-surface border border-border-soft text-text-secondary rounded truncate max-w-[120px]"
+                            className="inline-block text-[11px] px-1.5 py-0.5 bg-bg-surface border border-border-soft text-text-secondary rounded truncate max-w-30"
                             title={a}
                           >
                             {a}
@@ -142,7 +142,9 @@ export default function TableRoomTypes({
                         )}
                       </div>
                     ) : (
-                      <span className="text-xs text-text-tertiary">Sin extras</span>
+                      <span className="text-xs text-text-tertiary">
+                        Sin extras
+                      </span>
                     )}
                   </TableCell>
 
@@ -204,4 +206,3 @@ export default function TableRoomTypes({
     </ErrorBoundary>
   );
 }
-
