@@ -59,38 +59,39 @@ export default async function HabitacionesPage(props: HabitacionesPageProps) {
     whereClause.floorId = Number(floorFilter);
   }
 
-  const [rooms, floors, roomTypes, totalItems, overallCount] = await Promise.all([
-    prisma.room.findMany({
-      where: whereClause,
-      include: {
-        floor: {
-          select: { id: true, number: true, name: true },
+  const [rooms, floors, roomTypes, totalItems, overallCount] =
+    await Promise.all([
+      prisma.room.findMany({
+        where: whereClause,
+        include: {
+          floor: {
+            select: { id: true, number: true, name: true },
+          },
+          roomType: {
+            select: { id: true, name: true, basePrice: true, maxGuests: true },
+          },
         },
-        roomType: {
-          select: { id: true, name: true, basePrice: true, maxGuests: true },
-        },
-      },
-      take: limit,
-      skip: skip,
-      orderBy: { number: "asc" },
-    }),
-    prisma.floor.findMany({
-      where: { deletedAt: null },
-      select: { id: true, number: true, name: true },
-      orderBy: { number: "asc" },
-    }),
-    prisma.roomType.findMany({
-      where: { deletedAt: null, isActive: true },
-      select: { id: true, name: true, basePrice: true, maxGuests: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.room.count({
-      where: whereClause,
-    }),
-    prisma.room.count({
-      where: { deletedAt: null },
-    }),
-  ]);
+        take: limit,
+        skip: skip,
+        orderBy: { number: "asc" },
+      }),
+      prisma.floor.findMany({
+        where: { deletedAt: null },
+        select: { id: true, number: true, name: true },
+        orderBy: { number: "asc" },
+      }),
+      prisma.roomType.findMany({
+        where: { deletedAt: null, isActive: true },
+        select: { id: true, name: true, basePrice: true, maxGuests: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.room.count({
+        where: whereClause,
+      }),
+      prisma.room.count({
+        where: { deletedAt: null },
+      }),
+    ]);
 
   const totalPages = Math.ceil(totalItems / limit);
 
@@ -112,4 +113,3 @@ export default async function HabitacionesPage(props: HabitacionesPageProps) {
     />
   );
 }
-
