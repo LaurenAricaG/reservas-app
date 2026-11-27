@@ -105,7 +105,7 @@ export default function Sidebar({
       label: "Turno de Caja",
       href: "/admin/caja",
       icon: FiDollarSign,
-      permission: "cash:read",
+      permission: ["cash:read", "cash:manage"],
     },
     {
       label: "Productos",

@@ -7,6 +7,11 @@ import {
   Product,
   Guest,
   DocumentType,
+  CashShift,
+  ShiftStatus,
+  Payment,
+  PaymentMethod,
+  ReceiptType,
 } from "@/generated/prisma/client";
 
 export type {
@@ -18,4 +23,9 @@ export type {
   Product,
   Guest,
   DocumentType,
+  CashShift,
+  ShiftStatus,
+  Payment,
+  PaymentMethod,
+  ReceiptType,
 };
