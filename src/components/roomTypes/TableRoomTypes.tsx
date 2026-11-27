@@ -158,7 +158,7 @@ export default function TableRoomTypes({
 
                   {/* Estado (Activo / Inactivo) */}
                   <TableCell className="text-center">
-                    <Badge variant={isActive ? "available" : "maintenance"}>
+                    <Badge variant={isActive ? "available" : "danger"}>
                       {isActive ? "● Activo" : "● Inactivo"}
                     </Badge>
                   </TableCell>

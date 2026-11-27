@@ -214,7 +214,7 @@ export default function Products({
       />
 
       {/* Main Content Card - sin overflow-hidden para que los selects no se corten */}
-      <div className="bg-bg-card border border-border-default/80 rounded-2xl shadow-xs min-h-[360px] flex flex-col justify-between">
+      <div className="bg-bg-card border border-border-default/80 rounded-2xl shadow-xs">
         {/* Filters Bar con relative z-20 */}
         <div className="px-6 py-4 border-b border-border-soft flex flex-col xl:flex-row items-stretch xl:items-center gap-4 bg-bg-card justify-between rounded-t-2xl relative z-20">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
@@ -280,7 +280,7 @@ export default function Products({
             )}
           </div>
         ) : (
-          <div className="flex-1 flex flex-col justify-between">
+          <>
             {/* Table Component */}
             <TableProducts
               products={initialProducts}
@@ -300,7 +300,7 @@ export default function Products({
               totalItems={totalItems}
               itemsPerPage={itemsPerPage}
             />
-          </div>
+          </>
         )}
       </div>
 

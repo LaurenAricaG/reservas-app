@@ -81,11 +81,6 @@ export default function TableProducts({
                     <div>
                       <div className="font-semibold text-text-primary text-sm flex items-center gap-2">
                         <span>{product.name}</span>
-                        {!product.isActive && (
-                          <span className="text-[10px] uppercase font-bold text-danger-text px-1.5 py-0.5 bg-danger-bg rounded-md">
-                            Inactivo
-                          </span>
-                        )}
                       </div>
                       {product.description ? (
                         <p className="text-xs text-text-secondary mt-0.5 line-clamp-1">
@@ -137,7 +132,7 @@ export default function TableProducts({
 
                 {/* Estado */}
                 <TableCell className="text-center">
-                  <Badge variant={product.isActive ? "available" : "maintenance"}>
+                  <Badge variant={product.isActive ? "available" : "danger"}>
                     {product.isActive ? "● Activo" : "● Inactivo"}
                   </Badge>
                 </TableCell>

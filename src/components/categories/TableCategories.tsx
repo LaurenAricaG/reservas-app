@@ -93,7 +93,7 @@ export default function TableCategories({
 
                   {/* Estado (Activo / Inactivo) */}
                   <TableCell className="text-center">
-                    <Badge variant={isActive ? "available" : "maintenance"}>
+                    <Badge variant={isActive ? "available" : "danger"}>
                       {isActive ? "● Activo" : "● Inactivo"}
                     </Badge>
                   </TableCell>

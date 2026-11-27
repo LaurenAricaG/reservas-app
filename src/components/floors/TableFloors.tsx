@@ -82,11 +82,6 @@ export default function TableFloors({
                 <TableCell>
                   <div className="font-semibold text-text-primary text-sm flex items-center gap-2">
                     <span>{floor.name}</span>
-                    {!floor.isActive && (
-                      <span className="text-[10px] uppercase font-bold text-danger-text px-1.5 py-0.5 bg-danger-bg rounded-md">
-                        Inactivo
-                      </span>
-                    )}
                   </div>
                 </TableCell>
 
@@ -127,7 +122,7 @@ export default function TableFloors({
 
                 {/* Estado */}
                 <TableCell className="text-center">
-                  <Badge variant={floor.isActive ? "available" : "maintenance"}>
+                  <Badge variant={floor.isActive ? "available" : "danger"}>
                     {floor.isActive ? "● Activo" : "● Inactivo"}
                   </Badge>
                 </TableCell>

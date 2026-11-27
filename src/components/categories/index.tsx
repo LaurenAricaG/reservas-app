@@ -4,10 +4,16 @@ import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { FiPlus, FiTag } from "react-icons/fi";
-import { cn } from "@/utils/cn.utils";
 import { SerializedCategory } from "@/types/categories";
 import PageHeader from "../ui/PageHeader";
-import { Pagination, SearchInput, Button, ConfirmModal } from "../ui";
+import {
+  Pagination,
+  SearchInput,
+  Button,
+  ConfirmModal,
+  Select,
+  type SelectOption,
+} from "../ui";
 import TableCategories from "./TableCategories";
 import CategoryModal from "./CategoryModal";
 import {
@@ -86,6 +92,12 @@ export default function Categories({
     params.delete("page");
     router.push(`${pathname}?${params.toString()}`);
   };
+
+  const statusOptions: SelectOption[] = [
+    { value: "all", label: "Todos los estados" },
+    { value: "active", label: "Activas" },
+    { value: "inactive", label: "Inactivas" },
+  ];
 
   // Abrir Modal de Creación
   const handleOpenCreate = () => {
@@ -180,56 +192,32 @@ export default function Categories({
         }
       />
 
-      {/* Main Content */}
-      <div className="bg-bg-card border border-border-default/80 rounded-2xl shadow-xs overflow-hidden">
-        {/* Filters Bar */}
-        <div className="px-6 py-4 border-b border-border-soft flex flex-col md:flex-row items-stretch md:items-center gap-4 bg-bg-card justify-between">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-xl">
-            <SearchInput placeholder="Buscar por nombre de categoría..." />
+      {/* Main Content Card - sin overflow-hidden para que los selects no se corten */}
+      <div className="bg-bg-card border border-border-default/80 rounded-2xl shadow-xs">
+        {/* Filters Bar con relative z-20 */}
+        <div className="px-6 py-4 border-b border-border-soft flex flex-col xl:flex-row items-stretch xl:items-center gap-4 bg-bg-card justify-between rounded-t-2xl relative z-20">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+            <div className="w-full sm:w-80">
+              <SearchInput
+                placeholder="Buscar por nombre de categoría..."
+                className="max-w-none"
+              />
+            </div>
 
-            {/* Selector Rápido de Estado */}
-            <div className="flex items-center gap-1 p-1 bg-bg-surface border border-border-soft rounded-xl text-xs font-medium self-start sm:self-auto">
-              <button
-                type="button"
-                onClick={() => handleStatusChange("all")}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-lg transition-all cursor-pointer",
-                  currentStatus === "all"
-                    ? "bg-bg-card text-brand-700 shadow-2xs font-bold"
-                    : "text-text-secondary hover:text-text-primary",
-                )}
-              >
-                Todas
-              </button>
-              <button
-                type="button"
-                onClick={() => handleStatusChange("active")}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-lg transition-all cursor-pointer",
-                  currentStatus === "active"
-                    ? "bg-bg-card text-brand-700 shadow-2xs font-bold"
-                    : "text-text-secondary hover:text-text-primary",
-                )}
-              >
-                Activas
-              </button>
-              <button
-                type="button"
-                onClick={() => handleStatusChange("inactive")}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-lg transition-all cursor-pointer",
-                  currentStatus === "inactive"
-                    ? "bg-bg-card text-brand-700 shadow-2xs font-bold"
-                    : "text-text-secondary hover:text-text-primary",
-                )}
-              >
-                Inactivas
-              </button>
+            {/* Filtro por Estado */}
+            <div className="w-full sm:w-48">
+              <Select
+                value={currentStatus}
+                onValueChange={handleStatusChange}
+                options={statusOptions}
+                placeholder="Todos los estados"
+                searchable={false}
+              />
             </div>
           </div>
 
-          <div className="text-xs text-text-secondary select-none font-medium">
-            Total: {totalItems}{" "}
+          <div className="text-xs text-text-secondary select-none font-medium whitespace-nowrap self-start xl:self-center">
+            Total: <span className="font-bold text-text-primary">{totalItems}</span>{" "}
             {totalItems === 1
               ? "categoría encontrada"
               : "categorías encontradas"}
@@ -238,7 +226,7 @@ export default function Categories({
 
         {/* Content / Empty State */}
         {initialCategories.length === 0 ? (
-          <div className="p-12 text-center select-none bg-bg-card">
+          <div className="p-12 text-center select-none bg-bg-card rounded-b-2xl">
             <FiTag className="w-10 h-10 text-text-tertiary mx-auto mb-3" />
             <h3 className="text-sm font-bold text-text-primary">
               {overallCount === 0

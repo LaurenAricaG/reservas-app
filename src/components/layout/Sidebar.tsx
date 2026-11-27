@@ -117,7 +117,7 @@ export default function Sidebar({
       label: "Huéspedes",
       href: "/admin/huespedes",
       icon: FiUsers,
-      permission: "guests:read",
+      permission: ["guests:read", "guests:manage"],
     },
     {
       label: "Pisos",
