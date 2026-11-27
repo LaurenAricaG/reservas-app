@@ -217,10 +217,20 @@ export default function ShiftDetailModal({
                           </span>
                         </td>
                         <td className="px-3 py-2 font-mono text-[11px] text-text-secondary">
-                          {payment.receiptNumber || payment.receiptType}
+                          {payment.amount < 0
+                            ? "Devolución"
+                            : payment.receiptNumber || payment.receiptType}
                         </td>
-                        <td className="px-3 py-2 text-right font-mono font-bold text-text-primary whitespace-nowrap">
-                          S/ {payment.amount.toFixed(2)}
+                        <td
+                          className={`px-3 py-2 text-right font-mono font-bold whitespace-nowrap ${
+                            payment.amount < 0
+                              ? "text-rose-700"
+                              : "text-text-primary"
+                          }`}
+                        >
+                          {payment.amount < 0
+                            ? `-S/ ${Math.abs(payment.amount).toFixed(2)}`
+                            : `S/ ${payment.amount.toFixed(2)}`}
                         </td>
                       </tr>
                     ))}

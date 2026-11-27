@@ -93,7 +93,7 @@ export default function Sidebar({
       label: "Reservas",
       href: "/admin/reservas",
       icon: FiCalendar,
-      permission: "bookings:read",
+      permission: ["bookings:read", "bookings:manage"],
     },
     {
       label: "Check-Out / Salidas",

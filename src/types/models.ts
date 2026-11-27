@@ -12,6 +12,9 @@ import {
   Payment,
   PaymentMethod,
   ReceiptType,
+  Booking,
+  BookingOrigin,
+  BookingStatus,
 } from "@/generated/prisma/client";
 
 export type {
@@ -28,4 +31,7 @@ export type {
   Payment,
   PaymentMethod,
   ReceiptType,
+  Booking,
+  BookingOrigin,
+  BookingStatus,
 };

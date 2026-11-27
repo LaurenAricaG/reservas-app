@@ -128,7 +128,7 @@ export default function CloseShiftModal({
         </div>
       }
     >
-      <form id="close-shift-form" onSubmit={handleSubmit} className="space-y-5">
+      <form id="close-shift-form" onSubmit={handleSubmit} noValidate className="space-y-5">
         {serverError && (
           <div className="p-3 rounded-xl bg-danger-bg border border-danger-border text-danger-text text-xs font-medium flex items-start gap-2">
             <FiAlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

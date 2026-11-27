@@ -26,7 +26,7 @@ export default function Badge({
   ...props
 }: BadgeProps) {
   const baseStyles =
-    "inline-flex items-center gap-1 font-semibold rounded-full border select-none leading-none";
+    "inline-flex items-center gap-1 font-semibold rounded-full border select-none leading-none whitespace-nowrap";
 
   const sizeStyles = {
     sm: "px-2 py-0.5 text-[10px]",
