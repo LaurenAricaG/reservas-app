@@ -70,6 +70,7 @@ export interface SerializedBooking {
   durationHours: number;
   numberOfGuests: number;
   status: BookingStatus;
+  stayStatus?: "ACTIVE" | "COMPLETED" | "CANCELLED" | null;
   totalPrice: number;
   depositPaid: number;
   pendingBalance: number;

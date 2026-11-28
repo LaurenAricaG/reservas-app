@@ -56,7 +56,11 @@ export default function BookingDetailModal({
   booking,
   isLoading = false,
 }: BookingDetailModalProps) {
-  const statusInfo = booking ? STATUS_BADGE[booking.status] : null;
+  const statusInfo = booking
+    ? booking.status === "CHECKED_IN" && booking.stayStatus === "COMPLETED"
+      ? { label: "● Finalizada", variant: "neutral" as const }
+      : STATUS_BADGE[booking.status]
+    : null;
 
   return (
     <Modal

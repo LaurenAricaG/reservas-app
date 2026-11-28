@@ -176,28 +176,28 @@ export default function CloseShiftModal({
               S/ {shift.digitalCollected.toFixed(2)}
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <div className="px-2.5 py-1.5 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div className="px-3 py-2 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between gap-2">
               <span className="text-text-secondary">Yape</span>
-              <span className="font-mono font-semibold text-text-primary">
+              <span className="font-mono font-semibold text-text-primary whitespace-nowrap">
                 S/ {shift.breakdown.YAPE.toFixed(2)}
               </span>
             </div>
-            <div className="px-2.5 py-1.5 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between">
+            <div className="px-3 py-2 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between gap-2">
               <span className="text-text-secondary">Plin</span>
-              <span className="font-mono font-semibold text-text-primary">
+              <span className="font-mono font-semibold text-text-primary whitespace-nowrap">
                 S/ {shift.breakdown.PLIN.toFixed(2)}
               </span>
             </div>
-            <div className="px-2.5 py-1.5 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between">
+            <div className="px-3 py-2 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between gap-2">
               <span className="text-text-secondary">Tarjeta</span>
-              <span className="font-mono font-semibold text-text-primary">
+              <span className="font-mono font-semibold text-text-primary whitespace-nowrap">
                 S/ {shift.breakdown.CARD.toFixed(2)}
               </span>
             </div>
-            <div className="px-2.5 py-1.5 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between">
-              <span className="text-text-secondary">Transf.</span>
-              <span className="font-mono font-semibold text-text-primary">
+            <div className="px-3 py-2 rounded-lg bg-bg-card border border-border-soft flex items-center justify-between gap-2">
+              <span className="text-text-secondary">Transferencia</span>
+              <span className="font-mono font-semibold text-text-primary whitespace-nowrap">
                 S/ {shift.breakdown.TRANSFER.toFixed(2)}
               </span>
             </div>

@@ -95,7 +95,11 @@ export default function TableBookings({
           {bookings.map((booking, index) => {
             const correlativeNumber =
               (currentPage - 1) * itemsPerPage + index + 1;
-            const statusInfo = STATUS_BADGE[booking.status];
+            const statusInfo =
+              booking.status === "CHECKED_IN" &&
+              booking.stayStatus === "COMPLETED"
+                ? { label: "● Finalizada", variant: "neutral" as const }
+                : STATUS_BADGE[booking.status];
             const isEditable =
               booking.status === "PENDING" || booking.status === "CONFIRMED";
             const isOverdueArrival =

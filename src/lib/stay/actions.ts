@@ -14,6 +14,7 @@ import {
   type RegisterStayPaymentInput,
 } from "./schema";
 import type {
+  ReceiptType,
   SerializedStay,
   SerializedStayAdditionalGuest,
   SerializedStayExtraCharge,
@@ -63,15 +64,23 @@ async function generateStayCode(
   return `${prefix}${String(nextNumber).padStart(4, "0")}`;
 }
 
-async function issueInternalTicketNumber(
+const DEFAULT_SERIES_MAP: Record<ReceiptType, string> = {
+  TICKET: "T001",
+  BOLETA: "B001",
+  FACTURA: "F001",
+};
+
+async function issueReceiptNumber(
   tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  receiptType: ReceiptType,
 ): Promise<string> {
+  const seriesCode = DEFAULT_SERIES_MAP[receiptType];
   const updatedSeries = await tx.receiptSeries.upsert({
-    where: { series: "T001" },
+    where: { series: seriesCode },
     update: { currentNumber: { increment: 1 } },
     create: {
-      receiptType: "TICKET",
-      series: "T001",
+      receiptType,
+      series: seriesCode,
       currentNumber: 1,
     },
   });
@@ -80,9 +89,15 @@ async function issueInternalTicketNumber(
   return `${updatedSeries.series}-${padded}`;
 }
 
+async function issueInternalTicketNumber(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+): Promise<string> {
+  return issueReceiptNumber(tx, "TICKET");
+}
+
 /**
  * Registra un Check-In (directo walk-in o desde una reserva existente),
- * marca la habitación como OCCUPIED y registra el pago inicial en caja si corresponde.
+ * marca la habitaciÃ³n como OCCUPIED y registra el pago inicial en caja si corresponde.
  */
 export async function createStayAction(
   input: CreateStayInput,
@@ -124,11 +139,11 @@ export async function createStayAction(
     if (Number.isNaN(expectedCheckOut.getTime())) {
       return {
         success: false,
-        errors: { expectedCheckOut: "Fecha de salida estimada inválida." },
+        errors: { expectedCheckOut: "Fecha de salida estimada invÃ¡lida." },
       };
     }
 
-    // Si es mismo día en modalidad por noche, ajustar a las 23:59
+    // Si es mismo dÃ­a en modalidad por noche, ajustar a las 23:59
     if (
       data.stayMode === "NIGHTLY" &&
       expectedCheckOut.getTime() <= now.getTime()
@@ -169,7 +184,7 @@ export async function createStayAction(
     if (!room) {
       return {
         success: false,
-        errors: { roomId: "La habitación seleccionada no existe o está inactiva." },
+        errors: { roomId: "La habitaciÃ³n seleccionada no existe o estÃ¡ inactiva." },
       };
     }
 
@@ -182,12 +197,12 @@ export async function createStayAction(
       return {
         success: false,
         errors: {
-          roomId: `La habitación ${room.number} está ${statusLabels[room.status] || room.status} y no puede recibir Check-In.`,
+          roomId: `La habitaciÃ³n ${room.number} estÃ¡ ${statusLabels[room.status] || room.status} y no puede recibir Check-In.`,
         },
       };
     }
 
-    // Verificar que no exista otra estadía ACTIVE en esa habitación
+    // Verificar que no exista otra estadÃ­a ACTIVE en esa habitaciÃ³n
     const activeStayInRoom = await prisma.stay.findFirst({
       where: { roomId: room.id, status: "ACTIVE" },
       select: { code: true },
@@ -196,7 +211,7 @@ export async function createStayAction(
       return {
         success: false,
         errors: {
-          roomId: `La habitación ${room.number} ya tiene la estadía activa ${activeStayInRoom.code}.`,
+          roomId: `La habitaciÃ³n ${room.number} ya tiene la estadÃ­a activa ${activeStayInRoom.code}.`,
         },
       };
     }
@@ -204,7 +219,7 @@ export async function createStayAction(
     if (!primaryGuest) {
       return {
         success: false,
-        errors: { primaryGuestId: "El huésped titular no existe o está inactivo." },
+        errors: { primaryGuestId: "El huÃ©sped titular no existe o estÃ¡ inactivo." },
       };
     }
 
@@ -215,7 +230,7 @@ export async function createStayAction(
       return {
         success: false,
         errors: {
-          additionalGuestIds: `La habitación ${room.number} permite máximo ${room.roomType.maxGuests} personas (incluyendo titular).`,
+          additionalGuestIds: `La habitaciÃ³n ${room.number} permite mÃ¡ximo ${room.roomType.maxGuests} personas (incluyendo titular).`,
         },
       };
     }
@@ -243,7 +258,7 @@ export async function createStayAction(
       ) {
         return {
           success: false,
-          message: `La reserva ${linkedBooking.code} no está disponible para Check-In.`,
+          message: `La reserva ${linkedBooking.code} no estÃ¡ disponible para Check-In.`,
         };
       }
     }
@@ -262,7 +277,7 @@ export async function createStayAction(
       return {
         success: false,
         errors: {
-          initialPayment: `El pago inicial excede el saldo pendiente (máximo S/ ${maxAllowed.toFixed(2)}).`,
+          initialPayment: `El pago inicial excede el saldo pendiente (mÃ¡ximo S/ ${maxAllowed.toFixed(2)}).`,
         },
       };
     }
@@ -316,13 +331,13 @@ export async function createStayAction(
         });
       }
 
-      // Actualizar estado de la habitación a OCUPADA
+      // Actualizar estado de la habitaciÃ³n a OCUPADA
       await tx.room.update({
         where: { id: room.id },
         data: { status: "OCCUPIED" },
       });
 
-      // Si viene de reserva, marcar reserva como CHECKED_IN y vincular sus pagos a la estadía
+      // Si viene de reserva, marcar reserva como CHECKED_IN y vincular sus pagos a la estadÃ­a
       if (linkedBooking) {
         await tx.booking.update({
           where: { id: linkedBooking.id },
@@ -334,7 +349,7 @@ export async function createStayAction(
         });
       }
 
-      // Si hubo pago inicial en recepción, registrarlo en caja
+      // Si hubo pago inicial en recepciÃ³n, registrarlo en caja
       let receiptNumber: string | null = null;
       if (initialPayment > 0 && openShiftId) {
         receiptNumber = await issueInternalTicketNumber(tx);
@@ -347,7 +362,7 @@ export async function createStayAction(
             receiptType: "TICKET",
             receiptNumber,
             reference: data.paymentReference,
-            notes: `Pago al Check-In — Estadía ${code}`,
+            notes: `Pago al Check-In â€” EstadÃ­a ${code}`,
           },
         });
       }
@@ -391,13 +406,13 @@ export async function createStayAction(
     console.error("Error al registrar Check-In:", error);
     return {
       success: false,
-      message: "Ocurrió un error inesperado al realizar el Check-In.",
+      message: "OcurriÃ³ un error inesperado al realizar el Check-In.",
     };
   }
 }
 
 /**
- * Registra un consumo extra (producto de catálogo con descuento de stock o cargo libre) en una estadía activa.
+ * Registra un consumo extra (producto de catÃ¡logo con descuento de stock o cargo libre) en una estadÃ­a activa.
  */
 export async function addStayExtraChargeAction(
   input: AddExtraChargeInput,
@@ -436,13 +451,13 @@ export async function addStayExtraChargeAction(
     });
 
     if (!stay) {
-      return { success: false, message: "No se encontró la estadía." };
+      return { success: false, message: "No se encontrÃ³ la estadÃ­a." };
     }
 
     if (stay.status !== "ACTIVE") {
       return {
         success: false,
-        message: "Solo se pueden agregar consumos a estadías activas.",
+        message: "Solo se pueden agregar consumos a estadÃ­as activas.",
       };
     }
 
@@ -454,7 +469,7 @@ export async function addStayExtraChargeAction(
       if (!product) {
         return {
           success: false,
-          errors: { productId: "El producto seleccionado no está disponible." },
+          errors: { productId: "El producto seleccionado no estÃ¡ disponible." },
         };
       }
 
@@ -511,7 +526,7 @@ export async function addStayExtraChargeAction(
       entity: "Stay",
       entityId: stay.id,
       details: {
-        mensaje: `Consumo "${data.concept}" (×${data.quantity} — S/ ${totalPrice.toFixed(2)}) cargado a estadía ${stay.code} (Hab. ${stay.room.number})`,
+        mensaje: `Consumo "${data.concept}" (Ã—${data.quantity} â€” S/ ${totalPrice.toFixed(2)}) cargado a estadÃ­a ${stay.code} (Hab. ${stay.room.number})`,
         estadiaCodigo: stay.code,
         habitacion: stay.room.number,
         concepto: data.concept,
@@ -534,13 +549,13 @@ export async function addStayExtraChargeAction(
     console.error("Error al registrar consumo extra:", error);
     return {
       success: false,
-      message: "Ocurrió un error inesperado al registrar el consumo.",
+      message: "OcurriÃ³ un error inesperado al registrar el consumo.",
     };
   }
 }
 
 /**
- * Registra un pago/abono parcial o total a cuenta de una estadía activa.
+ * Registra un pago/abono parcial o total a cuenta de una estadÃ­a activa.
  */
 export async function registerStayPaymentAction(
   input: RegisterStayPaymentInput,
@@ -558,7 +573,7 @@ export async function registerStayPaymentAction(
     ) {
       return {
         success: false,
-        message: "No tienes permiso para registrar pagos en estadías.",
+        message: "No tienes permiso para registrar pagos en estadÃ­as.",
       };
     }
 
@@ -584,13 +599,13 @@ export async function registerStayPaymentAction(
     ]);
 
     if (!stay) {
-      return { success: false, message: "No se encontró la estadía." };
+      return { success: false, message: "No se encontrÃ³ la estadÃ­a." };
     }
 
     if (stay.status !== "ACTIVE") {
       return {
         success: false,
-        message: "Solo se pueden registrar abonos en estadías activas.",
+        message: "Solo se pueden registrar abonos en estadÃ­as activas.",
       };
     }
 
@@ -598,7 +613,7 @@ export async function registerStayPaymentAction(
       return {
         success: false,
         message:
-          "No hay un Turno de Caja abierto. Abre un turno en el módulo de Caja antes de recibir pagos.",
+          "No hay un Turno de Caja abierto. Abre un turno en el mÃ³dulo de Caja antes de recibir pagos.",
       };
     }
 
@@ -609,7 +624,7 @@ export async function registerStayPaymentAction(
       return {
         success: false,
         errors: {
-          amount: `El monto supera el saldo pendiente de la estadía (S/ ${pendingBalance.toFixed(2)}).`,
+          amount: `El monto supera el saldo pendiente de la estadÃ­a (S/ ${pendingBalance.toFixed(2)}).`,
         },
       };
     }
@@ -627,7 +642,7 @@ export async function registerStayPaymentAction(
           receiptType: "TICKET",
           receiptNumber,
           reference: data.reference,
-          notes: data.notes || `Abono a cuenta — Estadía ${stay.code}`,
+          notes: data.notes || `Abono a cuenta â€” EstadÃ­a ${stay.code}`,
         },
       });
 
@@ -644,7 +659,7 @@ export async function registerStayPaymentAction(
       entity: "Stay",
       entityId: stay.id,
       details: {
-        mensaje: `Abono de S/ ${amount.toFixed(2)} (${data.method}) registrado en estadía ${stay.code} — Constancia ${result.receiptNumber}`,
+        mensaje: `Abono de S/ ${amount.toFixed(2)} (${data.method}) registrado en estadÃ­a ${stay.code} â€” Constancia ${result.receiptNumber}`,
         codigo: stay.code,
         monto: amount,
         metodo: data.method,
@@ -663,16 +678,16 @@ export async function registerStayPaymentAction(
       message: `Abono de S/ ${amount.toFixed(2)} registrado (Constancia ${result.receiptNumber}).`,
     };
   } catch (error) {
-    console.error("Error al registrar abono en estadía:", error);
+    console.error("Error al registrar abono en estadÃ­a:", error);
     return {
       success: false,
-      message: "Ocurrió un error inesperado al registrar el abono.",
+      message: "OcurriÃ³ un error inesperado al registrar el abono.",
     };
   }
 }
 
 /**
- * Obtiene el estado de cuenta completo de una estadía (acompañantes, consumos y pagos).
+ * Obtiene el estado de cuenta completo de una estadÃ­a (acompaÃ±antes, consumos y pagos).
  */
 export async function getStayDetailAction(
   stayId: number,
@@ -690,7 +705,7 @@ export async function getStayDetailAction(
     ) {
       return {
         success: false,
-        message: "No tienes permiso para ver el detalle de estadías.",
+        message: "No tienes permiso para ver el detalle de estadÃ­as.",
       };
     }
 
@@ -717,7 +732,7 @@ export async function getStayDetailAction(
     });
 
     if (!stay) {
-      return { success: false, message: "Estadía no encontrada." };
+      return { success: false, message: "EstadÃ­a no encontrada." };
     }
 
     const totalAmount = Number(stay.totalAmount);
@@ -799,10 +814,10 @@ export async function getStayDetailAction(
 
     return { success: true, data: serialized };
   } catch (error) {
-    console.error("Error al obtener detalle de estadía:", error);
+    console.error("Error al obtener detalle de estadÃ­a:", error);
     return {
       success: false,
-      message: "No se pudo cargar el estado de cuenta de la estadía.",
+      message: "No se pudo cargar el estado de cuenta de la estadÃ­a.",
     };
   }
 }

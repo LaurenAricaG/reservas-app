@@ -105,6 +105,11 @@ export default async function ReservasPage(props: ReservasPageProps) {
       include: {
         room: { include: { roomType: true, floor: true } },
         guest: true,
+        stays: {
+          select: { status: true },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
         _count: { select: { payments: true } },
       },
       take: limit,
@@ -165,6 +170,7 @@ export default async function ReservasPage(props: ReservasPageProps) {
       durationHours: duration.durationHours,
       numberOfGuests: b.numberOfGuests,
       status: b.status,
+      stayStatus: b.stays[0]?.status ?? null,
       totalPrice,
       depositPaid,
       pendingBalance: roundMoney(Math.max(0, totalPrice - depositPaid)),

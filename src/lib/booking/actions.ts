@@ -964,6 +964,11 @@ export async function getBookingDetailAction(
       include: {
         room: { include: { roomType: true, floor: true } },
         guest: true,
+        stays: {
+          select: { status: true },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
         payments: { orderBy: { createdAt: "desc" } },
       },
     });
@@ -1016,6 +1021,7 @@ export async function getBookingDetailAction(
       durationHours: duration.durationHours,
       numberOfGuests: booking.numberOfGuests,
       status: booking.status,
+      stayStatus: booking.stays[0]?.status ?? null,
       totalPrice,
       depositPaid,
       pendingBalance: roundMoney(Math.max(0, totalPrice - depositPaid)),
