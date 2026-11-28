@@ -18,10 +18,10 @@ import {
   FiShield,
   FiSettings,
   FiX,
-  FiExternalLink,
+  FiTag,
+  FiLayers,
 } from "react-icons/fi";
 import { MdOutlineMeetingRoom, MdOutlineApartment } from "react-icons/md";
-import { FiLayers } from "react-icons/fi";
 import { hasPermission } from "@/utils/permissions.utils";
 
 interface SidebarProps {
@@ -63,99 +63,121 @@ export default function Sidebar({
 
   const isVisuallyCollapsed = collapsed && !isMobile;
 
-  // Módulos del Hotel Party PMS
-  const allNavItems = [
+  // Módulos del Hotel Party PMS agrupados en secuencia operativa
+  const navGroups = [
     {
-      label: "Rack de Habitaciones",
-      href: "/admin",
-      icon: FiGrid,
-      permission: "rooms:read",
+      title: "Operación Diaria",
+      items: [
+        {
+          label: "Rack de Habitaciones",
+          href: "/admin",
+          icon: FiGrid,
+          permission: "rooms:read",
+        },
+        {
+          label: "Turno de Caja",
+          href: "/admin/caja",
+          icon: FiDollarSign,
+          permission: ["cash:read", "cash:manage"],
+        },
+        {
+          label: "Reservas",
+          href: "/admin/reservas",
+          icon: FiCalendar,
+          permission: ["bookings:read", "bookings:manage"],
+        },
+        {
+          label: "Check-In / Alquiler",
+          href: "/admin/check-in",
+          icon: FiLogIn,
+          permission: ["stays:read", "stays:checkin", "stays:create", "stays:manage"],
+        },
+        {
+          label: "Check-Out / Salidas",
+          href: "/admin/check-out",
+          icon: FiLogOut,
+          permission: ["stays:read", "stays:checkout", "stays:update", "stays:manage"],
+        },
+        {
+          label: "Huéspedes",
+          href: "/admin/huespedes",
+          icon: FiUsers,
+          permission: ["guests:read", "guests:manage"],
+        },
+      ],
     },
     {
-      label: "Categorías",
-      href: "/admin/categorias",
-      icon: FiLogIn,
-      permission: ["categories:read", "categories:manage", "products:manage"],
+      title: "Infraestructura y Catálogo",
+      items: [
+        {
+          label: "Pisos",
+          href: "/admin/pisos",
+          icon: MdOutlineApartment,
+          permission: ["rooms:read", "rooms:manage", "floors:read", "floors:manage"],
+        },
+        {
+          label: "Tipos de Habitación",
+          href: "/admin/tipos-habitacion",
+          icon: FiLayers,
+          permission: ["rooms:read", "rooms:manage"],
+        },
+        {
+          label: "Habitaciones",
+          href: "/admin/habitaciones",
+          icon: MdOutlineMeetingRoom,
+          permission: ["rooms:read", "rooms:manage"],
+        },
+        {
+          label: "Categorías",
+          href: "/admin/categorias",
+          icon: FiTag,
+          permission: ["categories:read", "categories:manage", "products:manage"],
+        },
+        {
+          label: "Productos",
+          href: "/admin/productos",
+          icon: FiShoppingBag,
+          permission: ["products:read", "products:manage"],
+        },
+      ],
     },
     {
-      label: "Tipos de Habitación",
-      href: "/admin/tipos-habitacion",
-      icon: FiLayers,
-      permission: ["rooms:read", "rooms:manage"],
-    },
-    {
-      label: "Check-In / Alquiler",
-      href: "/admin/check-in",
-      icon: FiLogIn,
-      permission: "stays:create",
-    },
-    {
-      label: "Reservas",
-      href: "/admin/reservas",
-      icon: FiCalendar,
-      permission: ["bookings:read", "bookings:manage"],
-    },
-    {
-      label: "Check-Out / Salidas",
-      href: "/admin/check-out",
-      icon: FiLogOut,
-      permission: "stays:update",
-    },
-    {
-      label: "Turno de Caja",
-      href: "/admin/caja",
-      icon: FiDollarSign,
-      permission: ["cash:read", "cash:manage"],
-    },
-    {
-      label: "Productos",
-      href: "/admin/productos",
-      icon: FiShoppingBag,
-      permission: ["products:read", "products:manage"],
-    },
-    {
-      label: "Huéspedes",
-      href: "/admin/huespedes",
-      icon: FiUsers,
-      permission: ["guests:read", "guests:manage"],
-    },
-    {
-      label: "Pisos",
-      href: "/admin/pisos",
-      icon: MdOutlineApartment,
-      permission: ["rooms:read", "rooms:manage", "floors:read", "floors:manage"],
-    },
-    {
-      label: "Habitaciones",
-      href: "/admin/habitaciones",
-      icon: MdOutlineMeetingRoom,
-      permission: ["rooms:read", "rooms:manage"],
-    },
-    {
-      label: "Reportes & Cierre",
-      href: "/admin/reportes",
-      icon: FiPieChart,
-      permission: "reports:read",
-    },
-    {
-      label: "Usuarios & Permisos",
-      href: "/admin/usuarios",
-      icon: FiShield,
-      permission: "users:read",
-    },
-    {
-      label: "Configuración",
-      href: "/admin/configuracion",
-      icon: FiSettings,
-      permission: "config:read",
+      title: "Administración",
+      items: [
+        {
+          label: "Reportes & Cierre",
+          href: "/admin/reportes",
+          icon: FiPieChart,
+          permission: "reports:read",
+        },
+        {
+          label: "Usuarios & Permisos",
+          href: "/admin/usuarios",
+          icon: FiShield,
+          permission: "users:read",
+        },
+        {
+          label: "Configuración",
+          href: "/admin/configuracion",
+          icon: FiSettings,
+          permission: "config:read",
+        },
+      ],
     },
   ];
 
-  // Si aún no hay permisos cargados (fase preview / admin general), mostramos todos los módulos
-  const navItems =
-    userPermissions.length > 0
-        ? allNavItems.filter((item) => hasPermission(userPermissions, item.permission, userRole))
-        : allNavItems;
+  // Filtrar grupos e ítems según permisos del usuario
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items:
+        userPermissions.length > 0
+          ? group.items.filter((item) =>
+              hasPermission(userPermissions, item.permission, userRole),
+            )
+          : group.items,
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <aside
@@ -213,61 +235,75 @@ export default function Sidebar({
       <nav
         onScroll={() => setHoveredItem(null)}
         className={cn(
-          "p-3.5 space-y-2 mt-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden",
-          collapsed && "md:px-2",
+          "p-3.5 space-y-4 mt-1 flex-1 min-h-0 overflow-y-auto overflow-x-hidden",
+          collapsed && "md:px-2 md:space-y-3",
         )}
       >
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/admin" && pathname.startsWith(item.href));
+        {visibleGroups.map((group, groupIndex) => (
+          <div key={group.title} className="space-y-1">
+            {!isVisuallyCollapsed ? (
+              <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
+                {group.title}
+              </div>
+            ) : (
+              groupIndex > 0 && (
+                <div className="mx-auto w-7 border-t border-border-default my-2" />
+              )
+            )}
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onClose}
-              onMouseEnter={(e) => {
-                if (isVisuallyCollapsed) {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  setHoveredItem({ label: item.label, rect });
-                }
-              }}
-              onMouseLeave={() => setHoveredItem(null)}
-              className={cn(
-                "flex items-center transition-all duration-200 group relative rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 select-none",
-                collapsed
-                  ? "w-full gap-3 px-3 py-3 md:w-12 md:h-12 md:justify-center md:mx-auto md:px-0 md:gap-0"
-                  : "w-full gap-3.5 px-3.5 py-3",
-                isActive
-                  ? "bg-brand-50 text-brand-700 font-semibold shadow-2xs"
-                  : "text-text-secondary hover:bg-brand-50 hover:text-brand-700 hover:shadow-2xs",
-              )}
-              title={isVisuallyCollapsed ? item.label : undefined}
-            >
-              <Icon
-                className={cn(
-                  "w-5 h-5 transition-transform duration-200 group-hover:scale-105 shrink-0",
-                  isActive
-                    ? "text-brand-600 font-bold"
-                    : "text-text-tertiary group-hover:text-brand-600",
-                )}
-              />
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/admin" && pathname.startsWith(item.href));
 
-              <span
-                className={cn(
-                  "text-sm font-medium tracking-normal transition-all duration-300 whitespace-nowrap overflow-hidden",
-                  collapsed
-                    ? "md:max-w-0 md:w-0 md:opacity-0 md:pointer-events-none"
-                    : "max-w-48 opacity-100",
-                )}
-              >
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  onMouseEnter={(e) => {
+                    if (isVisuallyCollapsed) {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setHoveredItem({ label: item.label, rect });
+                    }
+                  }}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  className={cn(
+                    "flex items-center transition-all duration-200 group relative rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 select-none",
+                    collapsed
+                      ? "w-full gap-3 px-3 py-2.5 md:w-12 md:h-11 md:justify-center md:mx-auto md:px-0 md:gap-0"
+                      : "w-full gap-3 px-3.5 py-2.5",
+                    isActive
+                      ? "bg-brand-50 text-brand-700 font-semibold shadow-2xs"
+                      : "text-text-secondary hover:bg-brand-50 hover:text-brand-700 hover:shadow-2xs",
+                  )}
+                  title={isVisuallyCollapsed ? item.label : undefined}
+                >
+                  <Icon
+                    className={cn(
+                      "w-4.5 h-4.5 transition-transform duration-200 group-hover:scale-105 shrink-0",
+                      isActive
+                        ? "text-brand-600 font-bold"
+                        : "text-text-tertiary group-hover:text-brand-600",
+                    )}
+                  />
+
+                  <span
+                    className={cn(
+                      "text-sm font-medium tracking-normal transition-all duration-300 whitespace-nowrap overflow-hidden",
+                      collapsed
+                        ? "md:max-w-0 md:w-0 md:opacity-0 md:pointer-events-none"
+                        : "max-w-48 opacity-100",
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Footer: Enlace a Web Pública y Cerrar Sesión */}

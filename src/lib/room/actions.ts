@@ -198,6 +198,18 @@ export async function updateRoomAction(
       };
     }
 
+    if (existing.status !== "AVAILABLE" && existing.status !== "MAINTENANCE") {
+      const statusLabelMap: Record<string, string> = {
+        OCCUPIED: "Ocupada",
+        RESERVED: "Reservada",
+        CLEANING: "En limpieza",
+      };
+      return {
+        success: false,
+        message: `No se puede editar la habitación "${existing.number}" porque está ${statusLabelMap[existing.status] || existing.status}. Solo se pueden editar habitaciones Disponibles o Fuera de servicio.`,
+      };
+    }
+
     // Verificar unicidad de número excluyendo el registro actual
     const duplicate = await prisma.room.findFirst({
       where: {

@@ -15,6 +15,10 @@ import {
   Booking,
   BookingOrigin,
   BookingStatus,
+  Stay,
+  StayStatus,
+  StayGuest,
+  StayExtraCharge,
 } from "@/generated/prisma/client";
 
 export type {
@@ -34,4 +38,8 @@ export type {
   Booking,
   BookingOrigin,
   BookingStatus,
+  Stay,
+  StayStatus,
+  StayGuest,
+  StayExtraCharge,
 };

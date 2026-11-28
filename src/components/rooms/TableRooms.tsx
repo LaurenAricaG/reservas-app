@@ -149,13 +149,22 @@ export default function TableRooms({
                   {/* Acciones */}
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5">
-                      {/* Editar */}
+                      {/* Editar (solo Disponible o Fuera de servicio) */}
                       {canUpdate && (
                         <ButtonIcon
                           onClick={() => onEdit(room)}
                           variant="warning"
                           icon={FiEdit2}
-                          title={`Editar habitación "${room.number}" (ID #${room.id})`}
+                          disabled={
+                            room.status !== "AVAILABLE" &&
+                            room.status !== "MAINTENANCE"
+                          }
+                          title={
+                            room.status !== "AVAILABLE" &&
+                            room.status !== "MAINTENANCE"
+                              ? "Solo se pueden editar habitaciones Disponibles o Fuera de servicio"
+                              : `Editar habitación "${room.number}" (ID #${room.id})`
+                          }
                         />
                       )}
 
